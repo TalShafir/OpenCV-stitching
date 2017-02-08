@@ -14,7 +14,6 @@
 //#include "opencv2/xfeatures2d.hpp"
 #include <time.h>
 
-// ahhhhh
 using namespace cv;
 //void on_trackbar(int, void*);
 using namespace std;
@@ -30,32 +29,10 @@ void stitchLeftRight(Mat& leftImage, Mat& rightImage, Mat& rightImageWarped, Mat
 void main()
 {
 	vector<Mat> panoramas(iters);
-	
-	std::vector<Mat> videoFrames;
+	Mat rightImageWarped1;
 	std::vector<Mat> leftEye;
 
-	VideoCapture cap("lala.mov");
-	if (!cap.isOpened())
-		return;
-	double frnb(cap.get(CV_CAP_PROP_FRAME_COUNT));
-	std::cout << "frame count = " << frnb << endl;
-
-	for (int i = 0; i < size; i++)
-	{
-		Mat frame;
-		cap.set(CV_CAP_PROP_POS_FRAMES, i);
-		bool success = cap.read(frame);
-		if (!success) {
-			cout << "Cannot read  frame " << endl;
-			break;
-		}
-		printf("%d\n", i);
-		videoFrames.push_back(frame);
-		Mat subImage(frame, cv::Rect(frame.cols*0.2, 0, frame.cols*0.3, frame.rows));
-		leftEye.push_back(subImage);
-	}
-	Mat rightImageWarped1;
-
+	leftEye = getFrames();
 	clock_t tic = clock();
 
 	for (int iter = 0; iter < iters; iter++)
@@ -148,4 +125,34 @@ void stitchLeftRight(Mat& leftImage, Mat& rightImage, Mat& rightImageWarped, Mat
 	// Overwrite leftImage on left end of final panorma image
 	Mat roi(panorama, Rect(0, 0, leftImage.cols, leftImage.rows));
 	leftImage.copyTo(roi);
+}
+
+
+
+std::vector<Mat> getFrames()
+{
+	std::vector<Mat> videoFrames;
+	std::vector<Mat> leftEye;
+
+	VideoCapture cap("lala.mov");
+	if (!cap.isOpened())
+		return;
+	double frnb(cap.get(CV_CAP_PROP_FRAME_COUNT));
+	std::cout << "frame count = " << frnb << endl;
+
+	for (int i = 0; i < size; i++)
+	{
+		Mat frame;
+		cap.set(CV_CAP_PROP_POS_FRAMES, i);
+		bool success = cap.read(frame);
+		if (!success) {
+			cout << "Cannot read  frame " << endl;
+			break;
+		}
+		//printf("%d\n", i);
+		videoFrames.push_back(frame);
+		Mat subImage(frame, cv::Rect(frame.cols*0.2, 0, frame.cols*0.3, frame.rows));
+		leftEye.push_back(subImage);
+	}
+	return leftEye;
 }
