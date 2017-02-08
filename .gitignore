@@ -5,6 +5,12 @@ NewProject_OpenCV.vcxproj
 NewProject_OpenCV.vcxproj.filters
 	
 NewProject_OpenCV.vcxproj.user
+
+opencv_project_test.vcxproj
+
+opencv_project_test.vcxproj.filters
+
+opencv_project_test.vcxproj.user
 	
 OPENCV_DEBUG.props
 	
