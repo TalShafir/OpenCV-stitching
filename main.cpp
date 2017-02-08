@@ -12,19 +12,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 //#include "opencv2/xfeatures2d.hpp"
+#include <time.h>
+
 
 using namespace cv;
-void on_trackbar(int, void*);
+//void on_trackbar(int, void*);
 using namespace std;
 const char* windowsName = "Panorama";
 int index = 0;
-int size = 40;
-std::vector<Mat> panorama(size);
+int iters = 3;
+int each_iter = 30;
+int size = iters*each_iter;
+//std::vector<Mat> panorama(size);
 
 void stitchLeftRight(Mat& leftImage, Mat& rightImage, Mat& rightImageWarped, Mat& panorama);
 #define OUTPUT_IMAGE "out.jpg"
 void main()
 {
+	vector<Mat> panoramas(iters);
+	
 	std::vector<Mat> videoFrames;
 	std::vector<Mat> leftEye;
 
@@ -50,18 +56,27 @@ void main()
 	}
 	Mat rightImageWarped1;
 
-	stitchLeftRight(leftEye[1], leftEye[0], rightImageWarped1, panorama[0]);
+	clock_t tic = clock();
 
-	for (int i = 2; i < size; i++)
+	for (int iter = 0; iter < iters; iter++)
 	{
-		stitchLeftRight(leftEye[i], panorama[i - 2], rightImageWarped1, panorama[i - 1]);
+		stitchLeftRight(leftEye[iter*each_iter + 1], leftEye[iter*each_iter], rightImageWarped1, panoramas[iter]);
 
-		printf("%d\n", i);
+		for (int i = 2; i < each_iter; i++)
+		{
+			stitchLeftRight(leftEye[iter*each_iter + i], panoramas[iter], rightImageWarped1, panoramas[iter]);
+
+			printf("%d\n", i);
+		}
 	}
+	clock_t toc = clock();
 
-	cvNamedWindow(windowsName, 1);
-	createTrackbar("MyTrackbar:", windowsName, &index, size - 2, on_trackbar);
-	on_trackbar(index, 0);
+	printf("Elapsed: %f seconds\n", (double)(toc - tic) / CLOCKS_PER_SEC);
+	//cvNamedWindow(windowsName, 1);
+	for (int i = 0; i < iters;i++)
+		imshow(std::to_string(i), panoramas[i]);
+	//createTrackbar("MyTrackbar:", windowsName, &index, size - 2, on_trackbar);
+	//on_trackbar(index, 0);
 	while (true)
 	{
 		int c;
@@ -72,19 +87,19 @@ void main()
 		}
 	}
 
-	for (Mat tmp : panorama)
-	{
-		tmp.release();
+	//for (Mat tmp : panorama)
+	//{
+	//	tmp.release();
 
-	}
+	//}
 
 }
 
-void on_trackbar(int, void*)
-{
-
-	imshow(windowsName, panorama[index]);
-}
+//void on_trackbar(int, void*)
+//{
+//
+//	imshow(windowsName, panorama[index]);
+//}
 
 void stitchLeftRight(Mat& leftImage, Mat& rightImage, Mat& rightImageWarped, Mat& panorama)
 {
