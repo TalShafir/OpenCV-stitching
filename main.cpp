@@ -25,6 +25,7 @@ int size = iters*each_iter;
 //std::vector<Mat> panorama(size);
 
 void stitchLeftRight(Mat& leftImage, Mat& rightImage, Mat& rightImageWarped, Mat& panorama);
+std::vector<Mat> getFrames();
 #define OUTPUT_IMAGE "out.jpg"
 void main()
 {
@@ -45,6 +46,7 @@ void main()
 
 			printf("%d\n", i);
 		}
+		std::cout << "iter: " << iter << std::endl;
 	}
 	clock_t toc = clock();
 
@@ -127,8 +129,6 @@ void stitchLeftRight(Mat& leftImage, Mat& rightImage, Mat& rightImageWarped, Mat
 	leftImage.copyTo(roi);
 }
 
-
-
 std::vector<Mat> getFrames()
 {
 	std::vector<Mat> videoFrames;
@@ -136,7 +136,7 @@ std::vector<Mat> getFrames()
 
 	VideoCapture cap("lala.mov");
 	if (!cap.isOpened())
-		return;
+		return Mat();
 	double frnb(cap.get(CV_CAP_PROP_FRAME_COUNT));
 	std::cout << "frame count = " << frnb << endl;
 
@@ -154,5 +154,6 @@ std::vector<Mat> getFrames()
 		Mat subImage(frame, cv::Rect(frame.cols*0.2, 0, frame.cols*0.3, frame.rows));
 		leftEye.push_back(subImage);
 	}
+	std::cout << "finished reading video" << std::endl;
 	return leftEye;
 }
