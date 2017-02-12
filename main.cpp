@@ -391,7 +391,7 @@ string result_name = "resultOfPanoramaOpenCV.jpg";
 bool timelapse = false;
 int range_width = -1;
 
-#define NUM_IMAGES 400
+#define NUM_IMAGES 100
 std::vector<Mat> getFrames()
 {
 	std::vector<Mat> videoFrames;
@@ -414,7 +414,7 @@ std::vector<Mat> getFrames()
 		}
 		//printf("%d\n", i);
 		videoFrames.push_back(frame);
-		Mat subImage(frame, cv::Rect(frame.cols*0.2, 0, frame.cols*0.3, frame.rows));
+		Mat subImage(frame, cv::Rect(frame.cols*0.2, 0, frame.cols*0.4, frame.rows));
 		leftEye.push_back(subImage);
 	}
 	std::cout << "finished reading video" << std::endl;
@@ -571,7 +571,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	//#pragma omp parallel for
+	#pragma omp parallel for
 	for (int i = 0; i < cameras.size(); ++i)
 	{
 		Mat R;
@@ -642,7 +642,7 @@ int main(int argc, char* argv[])
 	vector<UMat> masks(num_images);
 
 	// Preapre images masks
-	//#pragma omp parallel for
+	#pragma omp parallel for
 	for (int i = 0; i < num_images; ++i)
 	{
 		masks[i].create(images[i].size(), CV_8U);
