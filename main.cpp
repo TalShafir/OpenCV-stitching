@@ -1,4 +1,4 @@
-// OpenCV_Helloworld.cpp : Defines the entry point for the console application.
+﻿// OpenCV_Helloworld.cpp : Defines the entry point for the console application.
 // Created for build/install tutorial, Microsoft Visual C++ 2010 Express and OpenCV 2.1.0
 
 //#define FirstProgram
@@ -56,11 +56,11 @@ int main()
 		imshow("Red/Cyan picture", result);
 
 
-
+		
 		readFrame = cap.read(temp);
 		if (!readFrame)
 			break;
-
+		
 		imshow("Fetched image", temp);
 		imshow("From vec", vec[counter]);
 
@@ -71,7 +71,7 @@ int main()
 	cap.release();
 
 	destroyAllWindows();
-
+	
 	temp.release();
 	//leftImage.release();
 	//rightImage.release();
@@ -89,8 +89,8 @@ int main()
 		std::cout << i << std::endl;
 		createMyPanorama(result, vec.at(i + delta), result);
 	}
-
-
+		
+	
 
 	std::vector<Mat> results;
 	results.reserve(15);
@@ -100,7 +100,7 @@ int main()
 	//	createMyPanorama(vec.at(i), vec.at(i + 1), results9[0][c]);
 
 
-
+	
 	/*Mat results8[8];
 	Mat results7[7];
 	Mat results6[6];
@@ -155,10 +155,10 @@ int main()
 	//createMyPanorama(result, vec.at(10), result);
 	//printf("%d %d\n", result.cols, result.rows);
 
+	
 
 
-
-	for (Mat m : vec)
+	for (Mat m: vec)
 		m.release();
 	return 0;
 }
@@ -179,9 +179,9 @@ void createMyPanorama(const Mat &image1, const Mat &image2, Mat &result)
 	detector->detect(image2, keypoints_scene);
 
 	//--Step 2 : Calculate Descriptors (feature vectors)
-	Ptr<Feature2D> extractor = BRISK::create(10, 0);
+	Ptr<Feature2D> extractor = BRISK::create(10,0);
 
-	Mat descriptors_object, descriptors_scene;
+	Mat descriptors_object,descriptors_scene;
 
 	extractor->compute(image1, keypoints_object, descriptors_object);
 	extractor->compute(image2, keypoints_scene, descriptors_scene);
@@ -189,7 +189,7 @@ void createMyPanorama(const Mat &image1, const Mat &image2, Mat &result)
 	//--Step 3 : Matching descriptor vectors using FLANN matcher
 	Ptr<DescriptorMatcher> matcher = FlannBasedMatcher::create("BruteForce-Hamming");
 	std::vector< DMatch > matches;
-	matcher->match(descriptors_object, descriptors_scene, matches);
+	matcher->match( descriptors_object, descriptors_scene, matches );
 
 	float dist = -1.0f;
 	float max_dist = matches[0].distance;
@@ -200,23 +200,23 @@ void createMyPanorama(const Mat &image1, const Mat &image2, Mat &result)
 	for (int i = 1; i < numMatches; i++)
 	{
 		dist = matches[i].distance;
-		if (dist < min_dist)
+		if( dist < min_dist ) 
 			min_dist = dist;
-		else if (dist > max_dist)
+		else if( dist > max_dist ) 
 			max_dist = dist;
 	}
 
 
 	//--Use only "good" matches (i.e. whose distance is less than 3 X min_dist )
 	std::vector< DMatch > good_matches;
-
+	
 	good_matches.reserve(numMatches);
 
 	for (int i = 0; i < numMatches; i++)
 	{
-		if (matches[i].distance < 3 * min_dist)
+		if( matches[i].distance < 3 * min_dist )
 		{
-			good_matches.push_back(matches[i]);
+			good_matches.push_back( matches[i] );
 		}
 	}
 
@@ -232,15 +232,15 @@ void createMyPanorama(const Mat &image1, const Mat &image2, Mat &result)
 	std::vector< Point2f > obj;
 	std::vector< Point2f > scene;
 
-	for (int i = 0; i < good_matches.size(); i++)
+	for( int i = 0; i < good_matches.size(); i++)
 	{
 		//--Get the keypoints from the good matches
-		obj.push_back(keypoints_object[good_matches[i].queryIdx].pt);
-		scene.push_back(keypoints_scene[good_matches[i].trainIdx].pt);
+		obj.push_back( keypoints_object[good_matches[i].queryIdx].pt );
+		scene.push_back( keypoints_scene[good_matches[i].trainIdx].pt );
 	}
 
 	//Find the Homography Matrix
-	Mat H = findHomography(obj, scene, RANSAC, 1, noArray(), 2000, 0.999);
+	Mat H = findHomography( obj, scene, RANSAC, 1, noArray(), 2000, 0.999);
 
 	// Use the homography Matrix to warp the images
 
@@ -261,7 +261,7 @@ void createMyPanorama(const Mat &image1, const Mat &image2, Mat &result)
 		st.estimateTransform(images);
 		st.composePanorama(images, result);
 	}
-
+	
 
 	/* To remove the black portion after stitching, and confine in a rectangular region*/
 
@@ -271,13 +271,13 @@ void createMyPanorama(const Mat &image1, const Mat &image2, Mat &result)
 
 	// add all non-black points to the vector
 	// there are more efficient ways to iterate through the image
-	for (int j = 0; j<result.rows; ++j)
-		for (int i = 0; i<result.cols; ++i)
+	for(int j=0; j<result.rows; ++j)
+		for(int i=0; i<result.cols; ++i)
 		{
 			// if not black: add to the list
-			if (result.at<cv::Vec3b>(j, i) != cv::Vec3b(0, 0, 0))
+			if(result.at<cv::Vec3b>(j,i) != cv::Vec3b(0,0,0))
 			{
-				nonBlackList.push_back(cv::Point(i, j));
+				nonBlackList.push_back(cv::Point(i,j));
 			}
 		}
 
@@ -353,8 +353,8 @@ void createMyPanorama(const Mat &image1, const Mat &image2, Mat &result)
 #include "opencv2/stitching/detail/seam_finders.hpp"
 #include "opencv2/stitching/detail/warpers.hpp"
 #include "opencv2/stitching/warpers.hpp"
-#include "opencv2\stitching.hpp"
 
+#include "FramesExtractor.h"
 
 #define ENABLE_LOG 1
 #define LOG(msg) std::cout << msg
@@ -365,76 +365,70 @@ using namespace cv;
 using namespace cv::detail;
 
 // Default command line args
-bool preview = false;
-bool try_cuda = false;
+vector<String> img_names;
+//bool preview = false;
+bool try_cuda = true;
 double work_megapix = 0.6;
 double seam_megapix = 0.1;
 double compose_megapix = -1;
 float conf_thresh = 1.f;
 string features_type = "orb";
-string matcher_type = "homography";
-string estimator_type = "homography";
+//string matcher_type = "homography";
+//string estimator_type = "homography";
 string ba_cost_func = "ray";
 string ba_refine_mask = "xxxxx";
 bool do_wave_correct = true;
 WaveCorrectKind wave_correct = detail::WAVE_CORRECT_HORIZ;
-//bool save_graph = false;
-//std::string save_graph_to;
-string warp_type = "plane";
-int expos_comp_type = ExposureCompensator::GAIN_BLOCKS;
+string warp_type = "cylindrical"; //= "spherical";
+int expos_comp_type = ExposureCompensator::GAIN; //ExposureCompensator::GAIN_BLOCKS;
 float match_conf = 0.3f;
 string seam_find_type = "gc_color";
 int blend_type = Blender::MULTI_BAND;
 int timelapse_type = Timelapser::AS_IS;
 float blend_strength = 3;
 string result_name = "resultOfPanoramaOpenCV.jpg";
-bool timelapse = false;
-int range_width = -1;
+//bool timelapse = false;
+int range_width = 5;
 
-#define NUM_IMAGES 100
-std::vector<Mat> getFrames()
-{
-	std::vector<Mat> videoFrames;
-	std::vector<Mat> leftEye;
+#include <opencv2\stitching.hpp>
 
-	VideoCapture cap("lala.mov");
-	if (!cap.isOpened())
-		return Mat();
-	double frnb(cap.get(CV_CAP_PROP_FRAME_COUNT));
-	std::cout << "frame count = " << frnb << endl;
-
-	for (int i = 0; i < NUM_IMAGES; i++)
-	{
-		Mat frame;
-		cap.set(CV_CAP_PROP_POS_FRAMES, i);
-		bool success = cap.read(frame);
-		if (!success) {
-			cout << "Cannot read  frame " << endl;
-			break;
-		}
-		//printf("%d\n", i);
-		videoFrames.push_back(frame);
-		Mat subImage(frame, cv::Rect(frame.cols*0.2, 0, frame.cols*0.4, frame.rows));
-		leftEye.push_back(subImage);
-	}
-	std::cout << "finished reading video" << std::endl;
-	return leftEye;
-}
 
 int main(int argc, char* argv[])
 {
-#if ENABLE_LOG
+	String name;
+	std::vector<Mat> results;
+	extractFrames("lala.mov", results);
+
+//#define NO_PICTURES
+#ifdef NO_PICTURES
+
+	
+	for (int i = 0; i < results.size(); i++)
+	{
+		name = "frames/I" + to_string(i) + ".jpg";
+		imwrite(name, results[i]);
+	}
+#endif
+//#define LEFT_PART
+#ifdef LEFT_PART
+	Rect rectangle(Point(10, 0), Point(350, 1280));
+#else
+	Rect rectangle(Point(0, 0), Point(results[0].cols, results[0].rows));
+#endif
+
+	for (int i = 0; i <	240; i += 4)
+	{
+		name = "frames/I" + to_string(i) + ".jpg";
+		img_names.push_back(name);
+	}
+
+	for (size_t i = 0; i < results.size(); i++)
+		results[i].release();
+
 	int64 app_start_time = getTickCount();
-#endif
-
-#if 0
-	cv::setBreakOnError(true);
-#endif
-
-	std::vector<Mat> frames = getFrames();
 
 	// Check if have enough images
-	int num_images = NUM_IMAGES;
+	int num_images = static_cast<int>(img_names.size());
 	if (num_images < 2)
 	{
 		LOGLN("Need more images");
@@ -445,9 +439,7 @@ int main(int argc, char* argv[])
 	bool is_work_scale_set = false, is_seam_scale_set = false, is_compose_scale_set = false;
 
 	LOGLN("Finding features...");
-#if ENABLE_LOG
 	int64 t = getTickCount();
-#endif
 
 	Ptr<FeaturesFinder> finder;
 	if (features_type == "orb")
@@ -466,14 +458,17 @@ int main(int argc, char* argv[])
 	vector<Size> full_img_sizes(num_images);
 	double seam_work_aspect = 1;
 
+	
+
 	for (int i = 0; i < num_images; ++i)
 	{
-		full_img = frames[i];
+		full_img = imread(img_names[i]); //results[i].clone();//
+		full_img = full_img(rectangle);
 		full_img_sizes[i] = full_img.size();
-
+		
 		if (full_img.empty())
 		{
-			LOGLN("Can't open image #" << i);
+			LOGLN("Can't open image " << img_names[i]);
 			return -1;
 		}
 		if (work_megapix < 0)
@@ -489,7 +484,7 @@ int main(int argc, char* argv[])
 				work_scale = min(1.0, sqrt(work_megapix * 1e6 / full_img.size().area()));
 				is_work_scale_set = true;
 			}
-			resize(full_img, img, Size(), work_scale, work_scale);
+			cv::resize(full_img, img, Size(), work_scale, work_scale);
 		}
 		if (!is_seam_scale_set)
 		{
@@ -501,7 +496,7 @@ int main(int argc, char* argv[])
 		features[i].img_idx = i;
 		LOGLN("Features in image #" << i + 1 << ": " << features[i].keypoints.size());
 
-		resize(full_img, img, Size(), seam_scale, seam_scale);
+		cv::resize(full_img, img, Size(), seam_scale, seam_scale);
 		images[i] = img.clone();
 	}
 
@@ -512,57 +507,50 @@ int main(int argc, char* argv[])
 	LOGLN("Finding features, time: " << ((getTickCount() - t) / getTickFrequency()) << " sec");
 
 	LOG("Pairwise matching");
-#if ENABLE_LOG
 	t = getTickCount();
-#endif
-	vector<MatchesInfo> pairwise_matches;
-	Ptr<FeaturesMatcher> matcher;
-	//if (matcher_type == "affine")
-	//	matcher = makePtr<BestOf2NearestMatcher>(try_cuda, match_conf);
-	/*else*/ if (range_width == -1)
-		matcher = makePtr<BestOf2NearestMatcher>(try_cuda, match_conf);
-	else
-		matcher = makePtr<BestOf2NearestRangeMatcher>(range_width, try_cuda, match_conf);
 
-	(*matcher)(features, pairwise_matches);
-	matcher->collectGarbage();
+	vector<MatchesInfo> pairwise_matches;
+	BestOf2NearestRangeMatcher matcher(range_width, try_cuda, match_conf);
+	matcher(features, pairwise_matches);
+	matcher.collectGarbage();
+
+	//vector<MatchesInfo> pairwise_matches;
+	//Ptr<FeaturesMatcher> matcher;
+	//if (range_width == -1)
+	//	matcher = makePtr<BestOf2NearestMatcher>(try_cuda, match_conf);
+	//else
+	//	matcher = makePtr<BestOf2NearestRangeMatcher>(range_width, try_cuda, match_conf);
+
+	//(*matcher)(features, pairwise_matches);
+	//matcher->collectGarbage();
 
 	LOGLN("Pairwise matching, time: " << ((getTickCount() - t) / getTickFrequency()) << " sec");
-
-	// Check if we should save matches graph
-	//if (save_graph)
-	//{
-	//	LOGLN("Saving matches graph...");
-	//	ofstream f(save_graph_to.c_str());
-	//	f << matchesGraphAsString(img_names, pairwise_matches, conf_thresh);
-	//}
 
 	// Leave only images we are sure are from the same panorama
 	vector<int> indices = leaveBiggestComponent(features, pairwise_matches, conf_thresh);
 	vector<Mat> img_subset;
+	vector<String> img_names_subset;
 	vector<Size> full_img_sizes_subset;
 	for (size_t i = 0; i < indices.size(); ++i)
 	{
+		img_names_subset.push_back(img_names[indices[i]]);
 		img_subset.push_back(images[indices[i]]);
 		full_img_sizes_subset.push_back(full_img_sizes[indices[i]]);
 	}
 
 	images = img_subset;
+	img_names = img_names_subset;
 	full_img_sizes = full_img_sizes_subset;
 
 	// Check if we still have enough images
-	num_images = static_cast<int>(images.size());
+	num_images = static_cast<int>(img_names.size());
 	if (num_images < 2)
 	{
 		LOGLN("Need more images");
 		return -1;
 	}
 
-	Ptr<Estimator> estimator;
-	//if (estimator_type == "affine")
-	//estimator = makePtr<AffineBasedEstimator>();
-	//else
-	estimator = makePtr<HomographyBasedEstimator>();
+	Ptr<Estimator> estimator = makePtr<HomographyBasedEstimator>();
 
 	vector<CameraParams> cameras;
 	if (!(*estimator)(features, pairwise_matches, cameras))
@@ -571,7 +559,6 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	#pragma omp parallel for
 	for (int i = 0; i < cameras.size(); ++i)
 	{
 		Mat R;
@@ -581,33 +568,45 @@ int main(int argc, char* argv[])
 	}
 
 	Ptr<detail::BundleAdjusterBase> adjuster;
-	if (ba_cost_func == "reproj") adjuster = makePtr<detail::BundleAdjusterReproj>();
-	else if (ba_cost_func == "ray") adjuster = makePtr<detail::BundleAdjusterRay>();
-	//else if (ba_cost_func == "affine") adjuster = makePtr<detail::BundleAdjusterAffinePartial>();
-	//else if (ba_cost_func == "no") adjuster = makePtr<NoBundleAdjuster>();
+	if (ba_cost_func == "reproj")
+		adjuster = makePtr<detail::BundleAdjusterReproj>();
+	else if (ba_cost_func == "ray")
+		adjuster = makePtr<detail::BundleAdjusterRay>();
 	else
 	{
 		cout << "Unknown bundle adjustment cost function: '" << ba_cost_func << "'.\n";
 		return -1;
 	}
 	adjuster->setConfThresh(conf_thresh);
+
 	Mat_<uchar> refine_mask = Mat::zeros(3, 3, CV_8U);
-	if (ba_refine_mask[0] == 'x') refine_mask(0, 0) = 1;
-	if (ba_refine_mask[1] == 'x') refine_mask(0, 1) = 1;
-	if (ba_refine_mask[2] == 'x') refine_mask(0, 2) = 1;
-	if (ba_refine_mask[3] == 'x') refine_mask(1, 1) = 1;
-	if (ba_refine_mask[4] == 'x') refine_mask(1, 2) = 1;
+	if (ba_refine_mask[0] == 'x')
+		refine_mask(0, 0) = 1;
+	if (ba_refine_mask[1] == 'x')
+		refine_mask(0, 1) = 1;
+	if (ba_refine_mask[2] == 'x')
+		refine_mask(0, 2) = 1;
+	if (ba_refine_mask[3] == 'x')
+		refine_mask(1, 1) = 1;
+	if (ba_refine_mask[4] == 'x')
+		refine_mask(1, 2) = 1;
+
 	adjuster->setRefinementMask(refine_mask);
+
+	int64 mTime = getTickCount();
+	LOGLN("Adjusting...");
 	if (!(*adjuster)(features, pairwise_matches, cameras))
 	{
 		cout << "Camera parameters adjusting failed.\n";
 		return -1;
 	}
+	LOGLN("Adjusting, time: " << ((getTickCount() - mTime) / getTickFrequency()) << " sec");
 
 	// Find median focal length
 
 	vector<double> focals;
-	for (size_t i = 0; i < cameras.size(); ++i)
+
+	for (int i = 0; i < cameras.size(); ++i)
 	{
 		LOGLN("Camera #" << indices[i] + 1 << ":\nK:\n" << cameras[i].K() << "\nR:\n" << cameras[i].R);
 		focals.push_back(cameras[i].focal);
@@ -631,9 +630,7 @@ int main(int argc, char* argv[])
 	}
 
 	LOGLN("Warping images (auxiliary)... ");
-#if ENABLE_LOG
 	t = getTickCount();
-#endif
 
 	vector<Point> corners(num_images);
 	vector<UMat> masks_warped(num_images);
@@ -642,7 +639,6 @@ int main(int argc, char* argv[])
 	vector<UMat> masks(num_images);
 
 	// Preapre images masks
-	#pragma omp parallel for
 	for (int i = 0; i < num_images; ++i)
 	{
 		masks[i].create(images[i].size(), CV_8U);
@@ -667,36 +663,30 @@ int main(int argc, char* argv[])
 	{
 		if (warp_type == "plane")
 			warper_creator = makePtr<cv::PlaneWarper>();
-		//else if (warp_type == "affine")
-		//	warper_creator = makePtr<cv::AffineWarper>();
 		else if (warp_type == "cylindrical")
 			warper_creator = makePtr<cv::CylindricalWarper>();
 		else if (warp_type == "spherical")
 			warper_creator = makePtr<cv::SphericalWarper>();
-		else if (warp_type == "fisheye")
-			warper_creator = makePtr<cv::FisheyeWarper>();
-		else if (warp_type == "stereographic")
-			warper_creator = makePtr<cv::StereographicWarper>();
-		else if (warp_type == "compressedPlaneA2B1")
-			warper_creator = makePtr<cv::CompressedRectilinearWarper>(2.0f, 1.0f);
-		else if (warp_type == "compressedPlaneA1.5B1")
-			warper_creator = makePtr<cv::CompressedRectilinearWarper>(1.5f, 1.0f);
-		else if (warp_type == "compressedPlanePortraitA2B1")
-			warper_creator = makePtr<cv::CompressedRectilinearPortraitWarper>(2.0f, 1.0f);
-		else if (warp_type == "compressedPlanePortraitA1.5B1")
-			warper_creator = makePtr<cv::CompressedRectilinearPortraitWarper>(1.5f, 1.0f);
-		else if (warp_type == "paniniA2B1")
-			warper_creator = makePtr<cv::PaniniWarper>(2.0f, 1.0f);
-		else if (warp_type == "paniniA1.5B1")
-			warper_creator = makePtr<cv::PaniniWarper>(1.5f, 1.0f);
-		else if (warp_type == "paniniPortraitA2B1")
-			warper_creator = makePtr<cv::PaniniPortraitWarper>(2.0f, 1.0f);
-		else if (warp_type == "paniniPortraitA1.5B1")
-			warper_creator = makePtr<cv::PaniniPortraitWarper>(1.5f, 1.0f);
-		else if (warp_type == "mercator")
-			warper_creator = makePtr<cv::MercatorWarper>();
-		else if (warp_type == "transverseMercator")
-			warper_creator = makePtr<cv::TransverseMercatorWarper>();
+		//else if (warp_type == "stereographic")
+		//	warper_creator = makePtr<cv::StereographicWarper>();
+		//else if (warp_type == "compressedPlaneA1.5B1")
+		//	warper_creator = makePtr<cv::CompressedRectilinearWarper>(1.5f, 1.0f);
+		//else if (warp_type == "compressedPlanePortraitA2B1")
+		//	warper_creator = makePtr<cv::CompressedRectilinearPortraitWarper>(2.0f, 1.0f);
+		//else if (warp_type == "compressedPlanePortraitA1.5B1")
+		//	warper_creator = makePtr<cv::CompressedRectilinearPortraitWarper>(1.5f, 1.0f);
+		//else if (warp_type == "paniniA2B1")
+		//	warper_creator = makePtr<cv::PaniniWarper>(2.0f, 1.0f);
+		//else if (warp_type == "paniniA1.5B1")
+		//	warper_creator = makePtr<cv::PaniniWarper>(1.5f, 1.0f);
+		//else if (warp_type == "paniniPortraitA2B1")
+		//	warper_creator = makePtr<cv::PaniniPortraitWarper>(2.0f, 1.0f);
+		//else if (warp_type == "paniniPortraitA1.5B1")
+		//	warper_creator = makePtr<cv::PaniniPortraitWarper>(1.5f, 1.0f);
+		//else if (warp_type == "mercator")
+		//	warper_creator = makePtr<cv::MercatorWarper>();
+		//else if (warp_type == "transverseMercator")
+		//	warper_creator = makePtr<cv::TransverseMercatorWarper>();
 	}
 
 	if (!warper_creator)
@@ -706,14 +696,15 @@ int main(int argc, char* argv[])
 	}
 
 	Ptr<RotationWarper> warper = warper_creator->create(static_cast<float>(warped_image_scale * seam_work_aspect));
-
 	for (int i = 0; i < num_images; ++i)
 	{
 		Mat_<float> K;
 		cameras[i].K().convertTo(K, CV_32F);
 		float swa = (float)seam_work_aspect;
-		K(0, 0) *= swa; K(0, 2) *= swa;
-		K(1, 1) *= swa; K(1, 2) *= swa;
+		K(0, 0) *= swa;
+		K(0, 2) *= swa;
+		K(1, 1) *= swa;
+		K(1, 2) *= swa;
 
 		corners[i] = warper->warp(images[i], K, cameras[i].R, INTER_LINEAR, BORDER_REFLECT, images_warped[i]);
 		sizes[i] = images_warped[i].size();
@@ -765,6 +756,10 @@ int main(int argc, char* argv[])
 
 	seam_finder->find(images_warped_f, corners, masks_warped);
 
+
+
+
+
 	// Release unused memory
 	images.clear();
 	images_warped.clear();
@@ -772,15 +767,12 @@ int main(int argc, char* argv[])
 	masks.clear();
 
 	LOGLN("Compositing...");
-#if ENABLE_LOG
 	t = getTickCount();
-#endif
 
 	Mat img_warped, img_warped_s;
 	Mat dilated_mask, seam_mask, mask, mask_warped;
 	Ptr<Blender> blender;
 	Ptr<Timelapser> timelapser;
-	//double compose_seam_aspect = 1;
 	double compose_work_aspect = 1;
 
 	for (int img_idx = 0; img_idx < num_images; ++img_idx)
@@ -788,7 +780,8 @@ int main(int argc, char* argv[])
 		LOGLN("Compositing image #" << indices[img_idx] + 1);
 
 		// Read image and resize it if necessary
-		full_img = frames[img_idx];
+		full_img = imread(img_names[img_idx]);
+		full_img = full_img(rectangle);
 		if (!is_compose_scale_set)
 		{
 			if (compose_megapix > 0)
@@ -796,7 +789,6 @@ int main(int argc, char* argv[])
 			is_compose_scale_set = true;
 
 			// Compute relative scales
-			//compose_seam_aspect = compose_scale / seam_scale;
 			compose_work_aspect = compose_scale / work_scale;
 
 			// Update warped image scale
@@ -827,7 +819,7 @@ int main(int argc, char* argv[])
 			}
 		}
 		if (abs(compose_scale - 1) > 1e-1)
-			resize(full_img, img, Size(), compose_scale, compose_scale);
+			cv::resize(full_img, img, Size(), compose_scale, compose_scale);
 		else
 			img = full_img;
 		full_img.release();
@@ -852,11 +844,11 @@ int main(int argc, char* argv[])
 		img.release();
 		mask.release();
 
-		dilate(masks_warped[img_idx], dilated_mask, Mat());
-		resize(dilated_mask, seam_mask, mask_warped.size());
+		cv::dilate(masks_warped[img_idx], dilated_mask, Mat());
+		cv::resize(dilated_mask, seam_mask, mask_warped.size());
 		mask_warped = seam_mask & mask_warped;
 
-		if (!blender && !timelapse)
+		if (!blender)
 		{
 			blender = Blender::createDefault(blend_type, try_cuda);
 			Size dst_sz = resultRoi(corners, sizes).size();
@@ -877,58 +869,20 @@ int main(int argc, char* argv[])
 			}
 			blender->prepare(corners, sizes);
 		}
-		else if (!timelapser && timelapse)
-		{
-			timelapser = Timelapser::createDefault(timelapse_type);
-			timelapser->initialize(corners, sizes);
-		}
-
-		//// Blend the current image
-		//if (timelapse)
-		//{
-		//	timelapser->process(img_warped_s, Mat::ones(img_warped_s.size(), CV_8UC1), corners[img_idx]);
-		//	String fixedFileName;
-		//	size_t pos_s = String(img_names[img_idx]).find_last_of("/\\");
-		//	if (pos_s == String::npos)
-		//	{
-		//		fixedFileName = "fixed_" + img_names[img_idx];
-		//	}
-		//	else
-		//	{
-		//		fixedFileName = "fixed_" + String(img_names[img_idx]).substr(pos_s + 1, String(img_names[img_idx]).length() - pos_s);
-		//	}
-		//	imwrite(fixedFileName, timelapser->getDst());
-		//}
-		//else
-		//{
-			blender->feed(img_warped_s, mask_warped, corners[img_idx]);
-		//}
+		blender->feed(img_warped_s, mask_warped, corners[img_idx]);
 	}
 
-	/*if (!timelapse)
-	{*/
-		Mat result, result_mask;
-		blender->blend(result, result_mask);
+	Mat result, result_mask;
+	blender->blend(result, result_mask);
 
-		LOGLN("Compositing, time: " << ((getTickCount() - t) / getTickFrequency()) << " sec");
+	LOGLN("Compositing, time: " << ((getTickCount() - t) / getTickFrequency()) << " sec");
 
-		imwrite(result_name, result);
-		imshow(result_name, result);
-
-		while (true)
-		{
-			int c;
-			c = waitKey(10);
-			if ((char)c == 27) // ESC
-			{
-				break;
-			}
-		}
-	//}
+	imwrite(result_name, result);
 
 
 	LOGLN("Finished, total time: " << ((getTickCount() - app_start_time) / getTickFrequency()) << " sec");
 	return 0;
 }
+
 
 #endif
