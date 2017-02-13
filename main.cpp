@@ -1,299 +1,4 @@
-﻿// OpenCV_Helloworld.cpp : Defines the entry point for the console application.
-// Created for build/install tutorial, Microsoft Visual C++ 2010 Express and OpenCV 2.1.0
-
-//#define FirstProgram
-#ifdef FirstProgram
-
-#include <opencv2\imgproc.hpp>
-#include <opencv2\highgui.hpp>
-#include <opencv2\stitching.hpp>
-
-#include <iostream>
-
-#include "AnaglyphMaker.h"
-#include "FramesExtractor.h"
-
-
-
-using namespace cv;
-
-
-void createMyPanorama(const Mat &image1, const Mat &image2, Mat &result);
-
-
-int main()
-{
-	Mat result;
-	//Mat leftImage = imread("cherry-left.jpg");
-	//Mat rightImage = imread("cherry-right.jpg");
-
-	//toAnaglyph(leftImage, rightImage, result);
-	//imwrite("redCyanPic.jpg", result);
-
-	Mat temp;
-	VideoCapture cap("lala.mov");
-
-	int choice = 0;
-	bool readFrame = true;
-	int counter = 0;
-
-	std::vector<Mat> vec;
-	extractFrames("lala.mov", vec);
-#ifdef F
-	Mat finalResult;
-	Stitcher panoramaStitcher = Stitcher::createDefault();
-
-	printf("%lf\n", cap.get(CV_CAP_PROP_FRAME_COUNT));
-	while (1)
-	{
-		choice = waitKey(30);
-
-		if (choice == 27)
-			break;
-
-		imshow("Left", leftImage);
-		imshow("Right", rightImage);
-		imshow("Red/Cyan picture", result);
-
-
-		
-		readFrame = cap.read(temp);
-		if (!readFrame)
-			break;
-		
-		imshow("Fetched image", temp);
-		imshow("From vec", vec[counter]);
-
-		counter++;
-	}
-	printf("Number of frames in video: %d\n", counter);
-#endif
-	cap.release();
-
-	destroyAllWindows();
-	
-	temp.release();
-	//leftImage.release();
-	//rightImage.release();
-	result.release();
-#ifdef F
-	std::vector<Mat> v(vec.begin(), vec.begin() + 10);
-	panoramaStitcher.stitch(v, finalResult);
-	imwrite("allFrames.jpg", finalResult);
-#endif
-	int delta = 1;
-
-	createMyPanorama(vec.at(0), vec.at(delta), result);
-	for (int i = delta; i < delta * 4; i += delta)
-	{
-		std::cout << i << std::endl;
-		createMyPanorama(result, vec.at(i + delta), result);
-	}
-		
-	
-
-	std::vector<Mat> results;
-	results.reserve(15);
-	//Mat results9[9][10];
-	//puts("G");
-	//for (int i = 1, c = 0; i < 10; i += 1, c++)
-	//	createMyPanorama(vec.at(i), vec.at(i + 1), results9[0][c]);
-
-
-	
-	/*Mat results8[8];
-	Mat results7[7];
-	Mat results6[6];
-	Mat results5[5];
-	Mat results4[4];
-	Mat results3[3];
-	Mat results2[2];*/
-	//Mat finalR;
-	//for (int i = 0; i < 8; i++)
-	//{
-	//	printf("%d\n", i);
-	//	for (int j = 0; j < 9 - i - 1; j++)
-	//		createMyPanorama(results9[i][j], results9[i][j+1], results9[i + 1][j]);
-	//}
-
-
-	//Mat results[5];
-	//int c = 0;
-	//for (int i = 0; i < 4; i ++ )
-	//{
-	//	createMyPanorama(vec.at(i), vec.at(i + 1), results[c]);
-	//	c++;
-	//}
-	//Mat results1[4];
-	//Mat results2[3];
-	//Mat results3[2];
-	//Mat results4;
-	//c = 0;
-	//for (int i = 0; i < 3; i++)
-	//{
-	//	createMyPanorama(results[i], results[i + 1], results1[c]);
-	//	c++;
-	//}
-	//c = 0;
-	//for (int i = 0; i < 2; i++)
-	//{
-	//	createMyPanorama(results1[i], results1[i + 1], results2[c]);
-	//	c++;
-	//}
-	//c = 0;
-	//for (int i = 0; i < 1; i++)
-	//{
-	//	createMyPanorama(results2[i], results2[i + 1], results3[c]);
-	//	c++;
-	//}
-	//createMyPanorama(results3[0], results3[1], results4);
-	//imwrite("r4.jpg", results4);
-
-	//createMyPanorama(vec.at(0), vec.at(5), result);
-	//printf("%d %d\n", result.cols, result.rows);
-	//temp = result.clone();
-	//createMyPanorama(result, vec.at(10), result);
-	//printf("%d %d\n", result.cols, result.rows);
-
-	
-
-
-	for (Mat m: vec)
-		m.release();
-	return 0;
-}
-
-
-#include "opencv2/calib3d/calib3d.hpp"
-
-
-
-void createMyPanorama(const Mat &image1, const Mat &image2, Mat &result)
-{
-	//--Step 1 : Detect the keypoints using BRISK Detector
-	Ptr<Feature2D> detector = BRISK::create(10, 0);
-
-	std::vector< KeyPoint > keypoints_object, keypoints_scene;
-
-	detector->detect(image1, keypoints_object);
-	detector->detect(image2, keypoints_scene);
-
-	//--Step 2 : Calculate Descriptors (feature vectors)
-	Ptr<Feature2D> extractor = BRISK::create(10,0);
-
-	Mat descriptors_object,descriptors_scene;
-
-	extractor->compute(image1, keypoints_object, descriptors_object);
-	extractor->compute(image2, keypoints_scene, descriptors_scene);
-
-	//--Step 3 : Matching descriptor vectors using FLANN matcher
-	Ptr<DescriptorMatcher> matcher = FlannBasedMatcher::create("BruteForce-Hamming");
-	std::vector< DMatch > matches;
-	matcher->match( descriptors_object, descriptors_scene, matches );
-
-	float dist = -1.0f;
-	float max_dist = matches[0].distance;
-	float min_dist = matches[0].distance;
-
-	//--Quick calculation of min-max distances between keypoints
-	int numMatches = descriptors_object.rows;
-	for (int i = 1; i < numMatches; i++)
-	{
-		dist = matches[i].distance;
-		if( dist < min_dist ) 
-			min_dist = dist;
-		else if( dist > max_dist ) 
-			max_dist = dist;
-	}
-
-
-	//--Use only "good" matches (i.e. whose distance is less than 3 X min_dist )
-	std::vector< DMatch > good_matches;
-	
-	good_matches.reserve(numMatches);
-
-	for (int i = 0; i < numMatches; i++)
-	{
-		if( matches[i].distance < 3 * min_dist )
-		{
-			good_matches.push_back( matches[i] );
-		}
-	}
-
-	if (good_matches.size() == 0)
-	{
-		puts("Failed finding matches");
-		//imshow("1", image1);
-		//imshow("2", image2);
-		//waitKey();
-		exit(1);
-	}
-
-	std::vector< Point2f > obj;
-	std::vector< Point2f > scene;
-
-	for( int i = 0; i < good_matches.size(); i++)
-	{
-		//--Get the keypoints from the good matches
-		obj.push_back( keypoints_object[good_matches[i].queryIdx].pt );
-		scene.push_back( keypoints_scene[good_matches[i].trainIdx].pt );
-	}
-
-	//Find the Homography Matrix
-	Mat H = findHomography( obj, scene, RANSAC, 1, noArray(), 2000, 0.999);
-
-	// Use the homography Matrix to warp the images
-
-	//if (image2.cols != result.cols || image2.rows != result.rows)
-	//	puts("Fuck");
-	if (!H.empty())
-	{
-		warpPerspective(image1, result, H, cv::Size(image1.cols + image2.cols, image1.rows));
-		cv::Mat half(result, cv::Rect(0, 0, image2.cols, image2.rows));
-		image2.copyTo(half);
-	}
-	else
-	{
-		puts("Stitcher");
-		Stitcher st = Stitcher::createDefault();
-		std::vector<Mat> images = { image1.clone(), image2.clone() };
-		//st.stitch(images, result);
-		st.estimateTransform(images);
-		st.composePanorama(images, result);
-	}
-	
-
-	/* To remove the black portion after stitching, and confine in a rectangular region*/
-
-	// vector with all non-black point positions
-	std::vector<cv::Point> nonBlackList;
-	nonBlackList.reserve(result.rows*result.cols);
-
-	// add all non-black points to the vector
-	// there are more efficient ways to iterate through the image
-	for(int j=0; j<result.rows; ++j)
-		for(int i=0; i<result.cols; ++i)
-		{
-			// if not black: add to the list
-			if(result.at<cv::Vec3b>(j,i) != cv::Vec3b(0,0,0))
-			{
-				nonBlackList.push_back(cv::Point(i,j));
-			}
-		}
-
-	// create bounding rect around those points
-	cv::Rect bb = cv::boundingRect(nonBlackList);
-
-	// display result and save it
-	cv::imwrite("panoramaImage.jpg", result(bb));
-	//imshow("result", result(bb));
-	//waitKey();
-	//destroyAllWindows();
-}
-
-#else
-
-/*M///////////////////////////////////////////////////////////////////////////////////////
+﻿/*M///////////////////////////////////////////////////////////////////////////////////////
 //
 //  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
 //
@@ -396,8 +101,8 @@ int range_width = 5;
 int main(int argc, char* argv[])
 {
 	String name;
-	std::vector<Mat> results;
-	extractFrames("lala.mov", results);
+	/*std::vector<Mat> results;
+	extractFrames("lala.mov", results);*/
 
 //#define NO_PICTURES
 #ifdef NO_PICTURES
@@ -409,21 +114,24 @@ int main(int argc, char* argv[])
 		imwrite(name, results[i]);
 	}
 #endif
-//#define LEFT_PART
-#ifdef LEFT_PART
-	Rect rectangle(Point(10, 0), Point(350, 1280));
-#else
-	Rect rectangle(Point(0, 0), Point(results[0].cols, results[0].rows));
-#endif
 
-	for (int i = 0; i <	240; i += 4)
+
+	for (int i = 0; i <	30; i += 1)
 	{
 		name = "frames/I" + to_string(i) + ".jpg";
 		img_names.push_back(name);
 	}
+	Mat firstFrame = imread(img_names[0]);
+#define LEFT_PART
+#ifdef LEFT_PART
+	Rect rectangle(Point(0.05*firstFrame.cols, 0), Point(0.45*firstFrame.cols, firstFrame.rows));
+#else
+	Rect rectangle(Point(0, 0), Point(firstFrame.cols, firstFrame.rows));
+#endif
+	
+	/*for (size_t i = 0; i < results.size(); i++)
+		results[i].release();*/
 
-	for (size_t i = 0; i < results.size(); i++)
-		results[i].release();
 
 	int64 app_start_time = getTickCount();
 
@@ -432,6 +140,7 @@ int main(int argc, char* argv[])
 	if (num_images < 2)
 	{
 		LOGLN("Need more images");
+		getchar();
 		return -1;
 	}
 
@@ -449,6 +158,7 @@ int main(int argc, char* argv[])
 	else
 	{
 		cout << "Unknown 2D features type: '" << features_type << "'.\n";
+		getchar();
 		return -1;
 	}
 
@@ -469,6 +179,7 @@ int main(int argc, char* argv[])
 		if (full_img.empty())
 		{
 			LOGLN("Can't open image " << img_names[i]);
+			getchar();
 			return -1;
 		}
 		if (work_megapix < 0)
@@ -509,20 +220,22 @@ int main(int argc, char* argv[])
 	LOG("Pairwise matching");
 	t = getTickCount();
 
-	vector<MatchesInfo> pairwise_matches;
-	BestOf2NearestRangeMatcher matcher(range_width, try_cuda, match_conf);
-	matcher(features, pairwise_matches);
-	matcher.collectGarbage();
-
+	
 	//vector<MatchesInfo> pairwise_matches;
-	//Ptr<FeaturesMatcher> matcher;
-	//if (range_width == -1)
-	//	matcher = makePtr<BestOf2NearestMatcher>(try_cuda, match_conf);
-	//else
-	//	matcher = makePtr<BestOf2NearestRangeMatcher>(range_width, try_cuda, match_conf);
+	//BestOf2NearestRangeMatcher matcher(range_width, try_cuda, match_conf);
+	//matcher(features, pairwise_matches);
+	//matcher.collectGarbage();
 
-	//(*matcher)(features, pairwise_matches);
-	//matcher->collectGarbage();
+	//slower but better results
+	vector<MatchesInfo> pairwise_matches;
+	Ptr<FeaturesMatcher> matcher;
+	if (range_width == -1)
+		matcher = makePtr<BestOf2NearestMatcher>(try_cuda, match_conf);
+	else
+		matcher = makePtr<BestOf2NearestRangeMatcher>(range_width, try_cuda, match_conf);
+
+	(*matcher)(features, pairwise_matches);
+	matcher->collectGarbage();
 
 	LOGLN("Pairwise matching, time: " << ((getTickCount() - t) / getTickFrequency()) << " sec");
 
@@ -547,6 +260,7 @@ int main(int argc, char* argv[])
 	if (num_images < 2)
 	{
 		LOGLN("Need more images");
+		getchar();
 		return -1;
 	}
 
@@ -556,6 +270,7 @@ int main(int argc, char* argv[])
 	if (!(*estimator)(features, pairwise_matches, cameras))
 	{
 		cout << "Homography estimation failed.\n";
+		getchar();
 		return -1;
 	}
 
@@ -575,6 +290,7 @@ int main(int argc, char* argv[])
 	else
 	{
 		cout << "Unknown bundle adjustment cost function: '" << ba_cost_func << "'.\n";
+		getchar();
 		return -1;
 	}
 	adjuster->setConfThresh(conf_thresh);
@@ -598,6 +314,7 @@ int main(int argc, char* argv[])
 	if (!(*adjuster)(features, pairwise_matches, cameras))
 	{
 		cout << "Camera parameters adjusting failed.\n";
+		getchar();
 		return -1;
 	}
 	LOGLN("Adjusting, time: " << ((getTickCount() - mTime) / getTickFrequency()) << " sec");
@@ -881,8 +598,6 @@ int main(int argc, char* argv[])
 
 
 	LOGLN("Finished, total time: " << ((getTickCount() - app_start_time) / getTickFrequency()) << " sec");
+	getchar();
 	return 0;
 }
-
-
-#endif

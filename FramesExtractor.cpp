@@ -3,13 +3,13 @@
 #include <opencv2\highgui.hpp>
 
 
-void extractFrames(const cv::String &videoName, std::vector<cv::Mat> &frames)
+int extractFrames(const cv::String &videoName, std::vector<cv::Mat> &frames)
 {
 	frames.resize(0);
 	cv::VideoCapture cap(videoName);
 	if (!cap.isOpened())
 	{
-		return;
+		return 1;
 	}
 
 	int numFrames = (int)cap.get(CV_CAP_PROP_FRAME_COUNT);
@@ -24,4 +24,6 @@ void extractFrames(const cv::String &videoName, std::vector<cv::Mat> &frames)
 
 	temp.release();
 	cap.release();
+
+	return 0;
 }

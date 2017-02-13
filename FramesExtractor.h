@@ -5,7 +5,7 @@
 #include <opencv2\core\cvstd.hpp>
 #include <vector>
 
-void extractFrames(const cv::String &videoName, std::vector<cv::Mat> &frames);
+int extractFrames(const cv::String &videoName, std::vector<cv::Mat> &frames);
 
 
 #endif
